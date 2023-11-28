@@ -8,8 +8,8 @@ import (
 )
 
 type DemoLoginResponse struct {
-	AdvertisingId string `json:"advertising_id"`
-	UserId        string `json:"user_id"`
+	AdvertisingId string `json:"advertisingId"`
+	UserId        string `json:"userId"`
 }
 
 func handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
