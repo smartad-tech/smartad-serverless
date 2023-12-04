@@ -24,7 +24,7 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 
 	userResource := apiGw.Root().AddResource(jsii.String("users"), &awsapigateway.ResourceOptions{})
 	adResource := apiGw.Root().AddResource(jsii.String("ad"), &awsapigateway.ResourceOptions{}).AddResource(jsii.String("{advertisingId}"), &awsapigateway.ResourceOptions{})
-	adViewsResource := adResource.AddResource(jsii.String("views"), &awsapigateway.ResourceOptions{})
+	segmentViewsResource := adResource.AddResource(jsii.String("segment-views"), &awsapigateway.ResourceOptions{})
 
 	demoLoginHandler := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("demo-login-handler"), &awscdklambdagoalpha.GoFunctionProps{
 		FunctionName: jsii.String("demo-login-handler"),
@@ -44,7 +44,7 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 		Entry:        jsii.String("../cmd/get-pie-chart-stats/*.go"),
 	})
 	viewsTable.GrantReadData(getStatsHandler)
-	adViewsResource.AddMethod(jsii.String("GET"),
+	segmentViewsResource.AddMethod(jsii.String("GET"),
 		awsapigateway.NewLambdaIntegration(getStatsHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
 		&awsapigateway.MethodOptions{OperationName: jsii.String("get-pie-chart-stats")})
 
