@@ -27,6 +27,16 @@ func SendBadRequest(errorMessage string) events.APIGatewayProxyResponse {
 	}
 }
 
+func SendServerError() events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode:        500,
+		Headers:           map[string]string{"content-type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"},
+		MultiValueHeaders: nil,
+		Body:              "",
+		IsBase64Encoded:   false,
+	}
+}
+
 func SendNotAuthorized() events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode:        401,

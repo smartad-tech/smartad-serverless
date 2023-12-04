@@ -10,18 +10,24 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
+type IViewsRepository interface {
+	FindViewsByAdId(advertisingId string) ([]ViewEntity, error)
+}
+
 type ViewsRepository struct {
 	dynamoClient *dynamodb.Client
 }
 
-var tableName = "smartad-views-table"
+const tableName = "smartad-views-table"
 
-func (r ViewsRepository) FindViewsByAdId(advertisingId string) []ViewEntity {
+func (r ViewsRepository) FindViewsByAdId(advertisingId string) ([]ViewEntity, error) {
+	entities := make([]ViewEntity, 0)
 	keyCondition := expression.Key("advertising_id").Equal(expression.Value(advertisingId))
 
 	expr, expressionError := expression.NewBuilder().WithKeyCondition(keyCondition).Build()
 	if expressionError != nil {
-		log.Fatalf("Expression builder returned error. Error: %s", expressionError.Error())
+		log.Printf("Expression builder returned error. Error: %s", expressionError.Error())
+		return entities, expressionError
 	}
 
 	response, queryError := r.dynamoClient.Query(context.TODO(), &dynamodb.QueryInput{
@@ -31,10 +37,9 @@ func (r ViewsRepository) FindViewsByAdId(advertisingId string) []ViewEntity {
 		KeyConditionExpression:    expr.KeyCondition(),
 	})
 	if queryError != nil {
-		log.Fatalf("FindViewsByAdId returned an error. Error: %s", queryError.Error())
+		log.Printf("FindViewsByAdId returned an error. Error: %s", queryError.Error())
+		return entities, queryError
 	}
-
-	var views []ViewEntity
 
 	for _, item := range response.Items {
 		view := ViewEntity{}
@@ -43,9 +48,9 @@ func (r ViewsRepository) FindViewsByAdId(advertisingId string) []ViewEntity {
 			log.Fatalf("Got error unmarshalling item: %s", decodingError)
 		}
 
-		views = append(views, view)
+		entities = append(entities, view)
 	}
-	return views
+	return entities, nil
 }
 
 func NewViewsRepo(dynamoClient *dynamodb.Client) *ViewsRepository {

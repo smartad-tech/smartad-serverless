@@ -37,16 +37,16 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 		awsapigateway.NewLambdaIntegration(demoLoginHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
 		&awsapigateway.MethodOptions{OperationName: jsii.String("demo-login")})
 
-	getStatsHandler := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("get-stats-handler"), &awscdklambdagoalpha.GoFunctionProps{
-		FunctionName: jsii.String("get-stats-handler"),
+	getStatsHandler := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("get-pie-chart-stats-handler"), &awscdklambdagoalpha.GoFunctionProps{
+		FunctionName: jsii.String("get-pie-chart-stats-handler"),
 		Architecture: awslambda.Architecture_ARM_64(),
 		Bundling:     bundlingOptions,
-		Entry:        jsii.String("../cmd/get-stats/*.go"),
+		Entry:        jsii.String("../cmd/get-pie-chart-stats/*.go"),
 	})
 	viewsTable.GrantReadData(getStatsHandler)
 	adViewsResource.AddMethod(jsii.String("GET"),
 		awsapigateway.NewLambdaIntegration(getStatsHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
-		&awsapigateway.MethodOptions{OperationName: jsii.String("get-stats")})
+		&awsapigateway.MethodOptions{OperationName: jsii.String("get-pie-chart-stats")})
 
 	return stack
 }
