@@ -24,6 +24,8 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 
 	userResource := apiGw.Root().AddResource(jsii.String("users"), &awsapigateway.ResourceOptions{})
 	adResource := apiGw.Root().AddResource(jsii.String("ad"), &awsapigateway.ResourceOptions{}).AddResource(jsii.String("{advertisingId}"), &awsapigateway.ResourceOptions{})
+	apiResourceV1 := apiGw.Root().AddResource(jsii.String("api"), &awsapigateway.ResourceOptions{}).AddResource(jsii.String("v1"), &awsapigateway.ResourceOptions{})
+	apiResourceV1Proxy := apiResourceV1.AddResource(jsii.String("{proxy+}"), &awsapigateway.ResourceOptions{})
 	segmentViewsResource := adResource.AddResource(jsii.String("segment-views"), &awsapigateway.ResourceOptions{})
 
 	demoLoginHandler := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("demo-login-handler"), &awscdklambdagoalpha.GoFunctionProps{
@@ -47,6 +49,24 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 	segmentViewsResource.AddMethod(jsii.String("GET"),
 		awsapigateway.NewLambdaIntegration(getStatsHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
 		&awsapigateway.MethodOptions{OperationName: jsii.String("get-pie-chart-stats")})
+
+	// General handler monolith lambda
+	generalHandler := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("general-handler"), &awscdklambdagoalpha.GoFunctionProps{
+		FunctionName: jsii.String("general-handler"),
+		Architecture: awslambda.Architecture_ARM_64(),
+		Bundling:     bundlingOptions,
+		Entry:        jsii.String("../cmd/general/*.go"),
+	})
+
+	viewsTable.GrantFullAccess(generalHandler)
+
+	apiResourceV1.AddMethod(jsii.String("ANY"),
+		awsapigateway.NewLambdaIntegration(generalHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
+		&awsapigateway.MethodOptions{OperationName: jsii.String("general")})
+
+	apiResourceV1Proxy.AddMethod(jsii.String("ANY"),
+		awsapigateway.NewLambdaIntegration(generalHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
+		&awsapigateway.MethodOptions{OperationName: jsii.String("general")})
 
 	return stack
 }

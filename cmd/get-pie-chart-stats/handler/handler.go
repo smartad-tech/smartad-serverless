@@ -23,7 +23,7 @@ func (h GetPieChartStatsHandler) Handle(req events.APIGatewayProxyRequest) (res 
 		return transport.SendServerError(), nil
 	}
 
-	return transport.SendOk(transport.GetAdStatsResponse{
+	return transport.SendOk(transport.GetPieChartStatsResponse{
 		AdvertisingId:         advertisingId,
 		TotalViewsPerCategory: categoryViews,
 	}), nil

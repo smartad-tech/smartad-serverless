@@ -1,11 +1,19 @@
 package transport
 
+type CategoryName = string
+
 type CategoryViews struct {
-	CategoryName string `json:"categoryName"`
-	Views        int    `json:"views"`
+	CategoryName CategoryName `json:"categoryName"`
+	Views        int          `json:"views"`
 }
 
-type GetAdStatsResponse struct {
+type GetPieChartStatsResponse struct {
 	AdvertisingId         string          `json:"advertisingId"`
 	TotalViewsPerCategory []CategoryViews `json:"totalViewsPerCategory"`
+}
+
+type DailyView struct {
+	AdvertisingId string               `json:"advertisingId"`
+	Date          string               `json:"date"`
+	Views         map[CategoryName]int `json:"views"`
 }

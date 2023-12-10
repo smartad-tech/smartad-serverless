@@ -1,8 +1,9 @@
 package service_test
 
 import (
-	"github.com/smartad-tech/smartad-serverless/internal/database"
 	"testing"
+
+	"github.com/smartad-tech/smartad-serverless/internal/database"
 
 	"github.com/smartad-tech/smartad-serverless/cmd/get-pie-chart-stats/service"
 )
@@ -11,6 +12,11 @@ const AdultMenCategoryUuid = "c44453a1-8184-4905-a81e-04372f9b76e6"
 const AdultWomenCategoryUuid = "7186a646-17ec-4afb-a18f-104c34830eac"
 
 type ViewDatabaseMock struct {
+}
+
+// FindViewsByAdIdInRange implements database.IViewsRepository.
+func (ViewDatabaseMock) FindViewsByAdIdInRange(advertisingId string, from int64, to int64) ([]database.ViewEntity, error) {
+	panic("unimplemented")
 }
 
 func (r ViewDatabaseMock) FindViewsByAdId(_ string) ([]database.ViewEntity, error) {
