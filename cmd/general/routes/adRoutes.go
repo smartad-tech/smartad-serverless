@@ -11,4 +11,5 @@ func PublicRoutes(a *fiber.App, controllers factory.Controllers) {
 
 	// Routes for GET method:
 	baseRoute.Get("ads/:adId/views/daily", controllers.StatisticsController.GetDailyViews)
+	baseRoute.Post("ads/:adId/views", controllers.DeviceController.PostViews)
 }
