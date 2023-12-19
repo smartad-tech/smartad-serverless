@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/smartad-tech/smartad-serverless/internal/database"
 	"github.com/smartad-tech/smartad-serverless/internal/types"
@@ -27,8 +29,9 @@ func (c StatisticsController) GetDailyViews(ctx *fiber.Ctx) error {
 	}
 
 	fromDate, toDate, err := func(from string, to string) (utils.SmartDate, utils.SmartDate, error) {
-		fromDate, err := utils.NewSmartDateFromString(from)
-		toDate, err := utils.NewSmartDateFromString(to)
+		fromDate, fromError := utils.NewSmartDateFromString(from)
+		toDate, toError := utils.NewSmartDateFromString(to)
+		err := errors.Join(fromError, toError)
 		if err != nil {
 			return utils.SmartDate{}, utils.SmartDate{}, err
 		}

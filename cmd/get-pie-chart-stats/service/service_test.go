@@ -14,6 +14,11 @@ const AdultWomenCategoryUuid = "7186a646-17ec-4afb-a18f-104c34830eac"
 type ViewDatabaseMock struct {
 }
 
+// SaveViews implements database.IViewsRepository.
+func (ViewDatabaseMock) SaveViews(advertisingId string, categoryToViewsMap map[string]int, timestamp int64) error {
+	panic("unimplemented")
+}
+
 // FindViewsByAdIdInRange implements database.IViewsRepository.
 func (ViewDatabaseMock) FindViewsByAdIdInRange(advertisingId string, from int64, to int64) ([]database.ViewEntity, error) {
 	panic("unimplemented")

@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/jsii-runtime-go"
+	"github.com/smartad-tech/smartad-serverless/internal/types"
 )
 
 type UnixTime = int64
@@ -18,6 +19,7 @@ const tableName = "smartad-views-table"
 type IViewsRepository interface {
 	FindViewsByAdId(advertisingId string) ([]ViewEntity, error)
 	FindViewsByAdIdInRange(advertisingId string, from UnixTime, to UnixTime) ([]ViewEntity, error)
+	SaveViews(advertisingId string, categoryToViewsMap map[types.CategoryUuid]int, timestamp UnixTime) error
 }
 
 type ViewsRepository struct {
@@ -93,6 +95,14 @@ func (r ViewsRepository) FindViewsByAdId(advertisingId string) ([]ViewEntity, er
 		entities = append(entities, view)
 	}
 	return entities, nil
+}
+
+func (r ViewsRepository) SaveViews(advertisingId string, categoryToViewsMap map[types.CategoryUuid]int, timestamp UnixTime) error {
+	r.dynamoClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName: jsii.String(tableName),
+	})
+
+	return nil
 }
 
 func NewViewsRepo(dynamoClient *dynamodb.Client) *ViewsRepository {
