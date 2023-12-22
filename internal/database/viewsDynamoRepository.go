@@ -98,9 +98,26 @@ func (r ViewsRepository) FindViewsByAdId(advertisingId string) ([]ViewEntity, er
 }
 
 func (r ViewsRepository) SaveViews(advertisingId string, categoryToViewsMap map[types.CategoryUuid]int, timestamp UnixTime) error {
-	r.dynamoClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	viewEntity := ViewEntity{
+		AdvertisingId: advertisingId,
+		Timestamp:     strconv.FormatInt(timestamp, 10),
+		Views:         categoryToViewsMap,
+	}
+
+	item, err := attributevalue.MarshalMap(viewEntity)
+	if err != nil {
+		log.Printf("Error during marshalling view entity for saving views. Error: %s", err.Error())
+		return err
+	}
+
+	_, err = r.dynamoClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: jsii.String(tableName),
+		Item:      item,
 	})
+	if err != nil {
+		log.Printf("Error during putItem. Error: %s", err.Error())
+		return err
+	}
 
 	return nil
 }

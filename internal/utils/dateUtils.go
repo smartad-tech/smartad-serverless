@@ -29,6 +29,10 @@ func NewSmartDateFromString(stringDate string) (SmartDate, error) {
 	return SmartDate{date: parsedDate}, nil
 }
 
+func NewSmartDate() SmartDate {
+	return SmartDate{date: time.Now()}
+}
+
 func NewSmartDateFromUnix(unixDate string) (SmartDate, error) {
 	unixFormatTime, err := strconv.ParseInt(unixDate, 10, 64)
 	if err != nil {

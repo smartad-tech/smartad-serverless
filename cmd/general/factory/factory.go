@@ -17,7 +17,7 @@ type Repositories struct {
 
 func InitControllers(repositories Repositories) Controllers {
 	statsController := controllers.NewStatisticsController(repositories.ViewsRepository)
-	deviceController := controllers.DeviceController{}
+	deviceController := controllers.NewDeviceController(repositories.ViewsRepository)
 	return Controllers{
 		StatisticsController: statsController,
 		DeviceController:     deviceController,
