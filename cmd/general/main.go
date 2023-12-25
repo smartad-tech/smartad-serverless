@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	fiberadapter "github.com/awslabs/aws-lambda-go-api-proxy/fiber"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/smartad-tech/smartad-serverless/cmd/general/factory"
 	"github.com/smartad-tech/smartad-serverless/cmd/general/routes"
 	"github.com/smartad-tech/smartad-serverless/internal/database"
@@ -20,6 +21,13 @@ var app *fiber.App
 func init() {
 	log.Printf("Fiber cold start...")
 	app = fiber.New()
+
+	// Temporary setting
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:3000, https://app.smartad.tech",
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	// DI
 	dynamoDbClient := database.InitDynamo()

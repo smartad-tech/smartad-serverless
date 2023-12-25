@@ -10,6 +10,6 @@ func PublicRoutes(a *fiber.App, controllers factory.Controllers) {
 	baseRoute := a.Group("/api/v1")
 
 	// Routes for GET method:
-	baseRoute.Get("ads/:adId/views/daily", controllers.StatisticsController.GetDailyViews)
-	baseRoute.Post("ads/:adId/views", controllers.DeviceController.PostViews)
+	baseRoute.Get("smartads/:adId/views/daily", controllers.StatisticsController.GetDailyViews)
+	baseRoute.Post("smartads/:adId/views", controllers.DeviceController.PostViews)
 }
