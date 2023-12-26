@@ -13,9 +13,14 @@ type StatisticsController struct {
 	viewsRepository database.IViewsRepository
 }
 
+type StatsCategoryView struct {
+	CategoryName string `json:"categoryName"`
+	Views        int    `json:"views"`
+}
+
 type DailyView struct {
-	Date  string                     `json:"date"`
-	Views map[types.CategoryName]int `json:"views"`
+	Date  string              `json:"date"`
+	Views []StatsCategoryView `json:"views"`
 }
 
 func (c StatisticsController) GetDailyViews(ctx *fiber.Ctx) error {
@@ -74,9 +79,18 @@ func (c StatisticsController) GetDailyViews(ctx *fiber.Ctx) error {
 
 	dailyViews := make([]DailyView, 0)
 	for dateString, categoryToViewsMap := range dateToViewsMap {
+		statsCategoryViews := make([]StatsCategoryView, 0)
+
+		for key, value := range categoryToViewsMap {
+			statsCategoryViews = append(statsCategoryViews, StatsCategoryView{
+				CategoryName: key,
+				Views:        value,
+			})
+		}
+
 		dailyViews = append(dailyViews, DailyView{
 			Date:  dateString,
-			Views: categoryToViewsMap,
+			Views: statsCategoryViews,
 		})
 	}
 
