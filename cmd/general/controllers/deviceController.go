@@ -27,6 +27,7 @@ type CategoryView struct {
 
 type PostViewsRequest struct {
 	CategoryViews []CategoryView `json:"categoryViews"`
+	DeviceId      string         `json:"deviceId"`
 }
 
 func (c DeviceController) PostViews(ctx *fiber.Ctx) error {

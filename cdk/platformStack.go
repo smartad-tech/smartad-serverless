@@ -5,6 +5,8 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awssecretsmanager"
+	"github.com/aws/aws-cdk-go/awscdk/v2/triggers"
 	"github.com/aws/aws-cdk-go/awscdklambdagoalpha/v2"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
@@ -15,6 +17,15 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 
 	bundlingOptions := &awscdklambdagoalpha.BundlingOptions{
 		GoBuildFlags: &[]*string{jsii.String(`-ldflags "-s -w"`)},
+	}
+
+	// Prepare env variables
+	neonDbSecrets := awssecretsmanager.Secret_FromSecretNameV2(stack, jsii.String("smartad/neon-creds"), jsii.String("smartad/neon-creds"))
+	sharedEnv := map[string]*string{
+		"NEON_DB_USERNAME": neonDbSecrets.SecretValueFromJson(jsii.String("username")).UnsafeUnwrap(),
+		"NEON_DB_PASSWORD": neonDbSecrets.SecretValueFromJson(jsii.String("password")).UnsafeUnwrap(),
+		"NEON_DB_HOST":     neonDbSecrets.SecretValueFromJson(jsii.String("host")).UnsafeUnwrap(),
+		"NEON_DB_NAME":     neonDbSecrets.SecretValueFromJson(jsii.String("database")).UnsafeUnwrap(),
 	}
 
 	apiGw := awsapigateway.NewRestApi(stack, jsii.String("platform-api-gateway"), &awsapigateway.RestApiProps{
@@ -56,6 +67,7 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 		Architecture: awslambda.Architecture_ARM_64(),
 		Bundling:     bundlingOptions,
 		Entry:        jsii.String("../cmd/general/*.go"),
+		Environment:  &sharedEnv,
 	})
 
 	viewsTable.GrantFullAccess(generalHandler)
@@ -67,6 +79,18 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 	apiResourceV1Proxy.AddMethod(jsii.String("ANY"),
 		awsapigateway.NewLambdaIntegration(generalHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
 		&awsapigateway.MethodOptions{OperationName: jsii.String("general")})
+
+	migratorHandler := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("migrator-handler"), &awscdklambdagoalpha.GoFunctionProps{
+		FunctionName: jsii.String("migrator-handler"),
+		Architecture: awslambda.Architecture_ARM_64(),
+		Bundling:     bundlingOptions,
+		Entry:        jsii.String("../cmd/migrator/*.go"),
+		Environment:  &sharedEnv,
+	})
+	triggers.NewTrigger(stack, jsii.String("smartad-migration-trigger"), &triggers.TriggerProps{
+		Handler:       migratorHandler,
+		ExecuteBefore: &[]constructs.Construct{generalHandler},
+	})
 
 	return stack
 }
