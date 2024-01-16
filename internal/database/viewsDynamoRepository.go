@@ -15,11 +15,12 @@ import (
 type UnixTime = int64
 
 const tableName = "smartad-views-table"
+const newTableName = "sa-views"
 
 type IViewsRepository interface {
 	FindViewsByAdId(advertisingId string) ([]ViewEntity, error)
 	FindViewsByAdIdInRange(advertisingId string, from UnixTime, to UnixTime) ([]ViewEntity, error)
-	SaveViews(advertisingId string, categoryToViewsMap map[types.CategoryUuid]int, timestamp UnixTime) error
+	SaveView(advertisingUuid string, categoryUuid types.CategoryUuid, timestamp UnixTime, deviceUuid string, viewLength float32) error
 }
 
 type ViewsRepository struct {
@@ -97,11 +98,13 @@ func (r ViewsRepository) FindViewsByAdId(advertisingId string) ([]ViewEntity, er
 	return entities, nil
 }
 
-func (r ViewsRepository) SaveViews(advertisingId string, categoryToViewsMap map[types.CategoryUuid]int, timestamp UnixTime) error {
+func (r ViewsRepository) SaveView(advertisingUuid string, categoryUuid types.CategoryUuid, timestamp UnixTime, deviceUuid string, viewLength float32) error {
 	viewEntity := ViewEntity{
-		AdvertisingId: advertisingId,
-		Timestamp:     strconv.FormatInt(timestamp, 10),
-		Views:         categoryToViewsMap,
+		AdvertisingUuid: advertisingUuid,
+		Timestamp:       strconv.FormatInt(timestamp, 10), // to unix timestamp string
+		DeviceUuid:      deviceUuid,
+		CategoryUuid:    categoryUuid,
+		ViewLength:      viewLength,
 	}
 
 	item, err := attributevalue.MarshalMap(viewEntity)
@@ -111,7 +114,7 @@ func (r ViewsRepository) SaveViews(advertisingId string, categoryToViewsMap map[
 	}
 
 	_, err = r.dynamoClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
-		TableName: jsii.String(tableName),
+		TableName: jsii.String(newTableName),
 		Item:      item,
 	})
 	if err != nil {

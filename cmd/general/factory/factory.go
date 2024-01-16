@@ -3,12 +3,13 @@ package factory
 import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/smartad-tech/smartad-serverless/cmd/general/controllers"
+	devicecontr "github.com/smartad-tech/smartad-serverless/cmd/general/controllers/device-controller"
 	"github.com/smartad-tech/smartad-serverless/internal/database"
 )
 
 type Controllers struct {
 	StatisticsController controllers.StatisticsController
-	DeviceController     controllers.DeviceController
+	DeviceController     devicecontr.DeviceController
 }
 
 type Repositories struct {
@@ -17,7 +18,7 @@ type Repositories struct {
 
 func InitControllers(repositories Repositories) Controllers {
 	statsController := controllers.NewStatisticsController(repositories.ViewsRepository)
-	deviceController := controllers.NewDeviceController(repositories.ViewsRepository)
+	deviceController := devicecontr.NewDeviceController(repositories.ViewsRepository)
 	return Controllers{
 		StatisticsController: statsController,
 		DeviceController:     deviceController,

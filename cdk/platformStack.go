@@ -32,6 +32,7 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 		RestApiName: jsii.String("platform-api-gateway"),
 	})
 	viewsTable := awsdynamodb.Table_FromTableName(stack, jsii.String("smartad-views-table"), jsii.String("smartad-views-table"))
+	newViewsTable := awsdynamodb.Table_FromTableName(stack, jsii.String("sa-views"), jsii.String("sa-views"))
 
 	userResource := apiGw.Root().AddResource(jsii.String("users"), &awsapigateway.ResourceOptions{})
 	adResource := apiGw.Root().AddResource(jsii.String("ad"), &awsapigateway.ResourceOptions{}).AddResource(jsii.String("{advertisingId}"), &awsapigateway.ResourceOptions{})
@@ -71,6 +72,7 @@ func newPlatformStack(scope constructs.Construct, id string, props awscdk.StackP
 	})
 
 	viewsTable.GrantFullAccess(generalHandler)
+	newViewsTable.GrantFullAccess(generalHandler)
 
 	apiResourceV1.AddMethod(jsii.String("ANY"),
 		awsapigateway.NewLambdaIntegration(generalHandler, &awsapigateway.LambdaIntegrationOptions{Proxy: jsii.Bool(true)}),
