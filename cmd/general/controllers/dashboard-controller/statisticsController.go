@@ -1,11 +1,11 @@
-package controllers
+package dashboardcontr
 
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/smartad-tech/smartad-serverless/internal/database"
 )
 
-type StatisticsController struct {
+type DashboardController struct {
 	viewsRepository database.IViewsRepository
 }
 
@@ -19,7 +19,7 @@ type DailyView struct {
 	Views []StatsCategoryView `json:"views"`
 }
 
-func (c StatisticsController) GetDailyViews(ctx *fiber.Ctx) error {
+func (c DashboardController) GetDailyViews(ctx *fiber.Ctx) error {
 	// from := ctx.Query("from")
 	// to := ctx.Query("to")
 	// adId := ctx.Params("adId")
@@ -94,8 +94,8 @@ func (c StatisticsController) GetDailyViews(ctx *fiber.Ctx) error {
 	return ctx.SendStatus(200)
 }
 
-func NewStatisticsController(viewsRepository database.IViewsRepository) StatisticsController {
-	return StatisticsController{
+func NewStatisticsController(viewsRepository database.IViewsRepository) DashboardController {
+	return DashboardController{
 		viewsRepository: viewsRepository,
 	}
 }

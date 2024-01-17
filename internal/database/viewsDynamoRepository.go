@@ -21,6 +21,7 @@ type IViewsRepository interface {
 	FindViewsByAdId(advertisingId string) ([]ViewEntity, error)
 	FindViewsByAdIdInRange(advertisingId string, from UnixTime, to UnixTime) ([]ViewEntity, error)
 	SaveView(advertisingUuid string, categoryUuid types.CategoryUuid, timestamp UnixTime, deviceUuid string, viewLength float32) error
+	FindAllViews(advertisingUuid string) ([]ViewEntity, error)
 }
 
 type ViewsRepository struct {
@@ -93,6 +94,38 @@ func (r ViewsRepository) FindViewsByAdId(advertisingId string) ([]ViewEntity, er
 			log.Fatalf("Got error unmarshalling item: %s", decodingError)
 		}
 
+		entities = append(entities, view)
+	}
+	return entities, nil
+}
+
+func (r ViewsRepository) FindAllViews(advertisingUuid string) ([]ViewEntity, error) {
+	entities := make([]ViewEntity, 0)
+	keyCondition := expression.Key("advertising_uuid").Equal(expression.Value(advertisingUuid))
+	expr, exprErr := expression.NewBuilder().WithKeyCondition(keyCondition).Build()
+	if exprErr != nil {
+		log.Printf("Expression builder returned error. Error: %s", exprErr.Error())
+		return entities, exprErr
+	}
+
+	response, queryError := r.dynamoClient.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:                 jsii.String(newTableName),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		KeyConditionExpression:    expr.KeyCondition(),
+	})
+	if queryError != nil {
+		log.Printf("FindAllViews returned an error. Error: %s", queryError.Error())
+		return entities, queryError
+	}
+
+	for _, item := range response.Items {
+		view := ViewEntity{}
+		decodingError := attributevalue.UnmarshalMap(item, &view)
+		if decodingError != nil {
+			log.Printf("Unmarshall view in FindAllViews failed. Error: %s", decodingError.Error())
+			return entities, decodingError
+		}
 		entities = append(entities, view)
 	}
 	return entities, nil
